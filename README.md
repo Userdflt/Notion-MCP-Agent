@@ -2,8 +2,8 @@
 
 #### Code
 
-* **Server:** [`notionflow_server.py`](notion_mcp_server.py)
-* **Agent + GUI:** [`notionflow_agent.py`](notion_agent.py)
+* **Server:** [`notion_mcp_server.py`](notion_mcp_server.py)
+* **Agent + GUI:** [`notion_agent.py`](notion_agent.py)
 
 ---
 
@@ -15,12 +15,9 @@ It pairs a **FastMCP** server that exposes tools for connected Notion pages with
 ---
 
 ## Sample Demo
-
-|                                           |                                                  |
-| ----------------------------------------- | ------------------------------------------------ |
-| **Creating Tables**                       | **Creating pages with notes**                    |
-| ![_](Table_Creation.gif)                  | ![_](writing_structured_notes.gif)               |
-
+![Writing Notes](writing_structured_notes.gif) 
+![Table Creation](Table_Creation.gif)
+![Writing Notes in New Page](writing_structured_notes.gif)
 
 ---
 
