@@ -17,7 +17,7 @@ It pairs a **FastMCP** server that exposes tools for connected Notion pages with
 ## Sample Demo
 ![Writing Notes](writing_structured_notes.gif)  
 ![Table Creation](Table_Creation.gif)  
-![Writing Notes in New Page](writing_structured_notes.gif)
+![Writing Notes in New Page](page_with_notes.gif)
 
 ---
 
