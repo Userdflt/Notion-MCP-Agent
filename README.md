@@ -25,24 +25,6 @@ A **FastMCP** server exposes a rich toolbox for manipulating Notion pages.Using 
 
 ---
 
-## Quick Start
-
-```bash
-# 1 · install deps
-pip install fastmcp mcp‑python notion‑client langchain langgraph coqui‑tts python‑dotenv
-
-# 2 · set env vars
-cp .env.example .env  # then add NOTION_TOKEN, PAGE_ID (optional)
-
-# 3 · run the server (SSE transport)
-python notion_mcp_server.py
-
-# 4 · launch the GUI agent
-python notion_agent.py
-```
-
----
-
 ## Project Workflow
 
 ### 1 · FastMCP Server
