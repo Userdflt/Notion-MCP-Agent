@@ -1,72 +1,114 @@
-# Notion-MCP-Agent
+# Notion‑MCP‑Agent
 
 #### Code
 
 * **Server:** [`notion_mcp_server.py`](notion_mcp_server.py)
-* **LangChain agent + Tkinter GUI:** [`notion_agent.py`](notion_agent.py)
+* **LangChain agent + Tkinter GUI:** [`notion_agent.py`](notion_agent.py)
+* **TTS Service:** [`tts_service.py`](tts_service.py)
+* **Environment:** `.env` (requires `NOTION_TOKEN`, optional `PAGE_ID` for testing)
 
 ---
 
 ## Overview
 
-**Notion-MCP-Agent** is a personal project that turns your Notion workspace into a live, AI-driven knowledge hub.  
-It pairs a **FastMCP** server that exposes tools for connected Notion pages with a **Tkinter-based GUI** built on **LangChain** and **GPT-4o** (or any compatible LLM). Together, they enable real-time page reading, writing, summarisation, and structured-note generation through a chat-style interface.
+**Notion‑MCP‑Agent** turns your Notion workspace into a live, AI‑driven knowledge hub — *now with one‑click text‑to‑speech*.
+A **FastMCP** server exposes a rich toolbox for manipulating Notion pages.Using **LangChain** Agentic Framework and **GPT‑4o** orchestrates conversations, read, write, summarise, build tables, manage metadata, and even generate MP3s of your notes — all in real time.
 
 ---
 
 ## Sample Demo
-![Writing Notes](writing_structured_notes.gif)  
-![Table Creation](Table_Creation.gif)  
+
+![Writing Notes](writing_structured_notes.gif)
+![Table Creation](Table_Creation.gif)
 ![Writing Notes in New Page](page_with_notes.gif)
+![TTS service](TTS.gif)
+
+---
+
+## Quick Start
+
+```bash
+# 1 · install deps
+pip install fastmcp mcp‑python notion‑client langchain langgraph coqui‑tts python‑dotenv
+
+# 2 · set env vars
+cp .env.example .env  # then add NOTION_TOKEN, PAGE_ID (optional)
+
+# 3 · run the server (SSE transport)
+python notion_mcp_server.py
+
+# 4 · launch the GUI agent
+python notion_agent.py
+```
 
 ---
 
 ## Project Workflow
 
-### 1 · FastMCP Server
+### 1 · FastMCP Server
 
-| Step                  | Action                                                                                                                  |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Tool Registration** | Defines tools such as `append_content`, `create_table`, `get_page_text`, and helpers for pages, blocks, and users.      |
-| **Prompt Endpoints**  | Ships `default_prompt` for everyday tasks and `structured_notes_prompt` for long-form, deeply structured notes.         |
-| **Transport**         | Runs over **SSE** (`/sse`) for lightweight, push-style communication.                                                   |
+| Step                  | Action                                                                                                                                                                                                                                                                                                            |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Tool Registration** | Registers **content tools** (`append_content`, `create_table`), **page tools** (`get_page_text`, `update_page_title`, `create_subpage`, etc.),<br>**user tools** (`list_users`, `retrieve_user`, `get_me`), **search tools** (`search_notion`, `retrieve_page_property`), and **media tools** (`text_to_speech`). |
+| **Prompt Endpoints**  | `default_prompt` for everyday tasks and `structured_notes_prompt` for 10‑section study guides (chain‑of‑thought).                                                                                                                                                                                                 |
+| **Transport**         | Runs over **SSE** (`/sse`) for low‑latency, push‑style communication.                                                                                                                                                                                                                                             |
 
-### 2 · LangChain Agent
+### 2 · LangChain Agent
 
-| Step             | Action                                                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| **Tool Loading** | Dynamically loads all exposed MCP tools into LangChain.                                           |
-| **LLM**          | Defaults to `gpt-4o` via `ChatOpenAI`, but you can swap in any Ollama / OpenAI-compatible model.   |
-| **Extra Tool**   | Adds an async `summarize` function to condense large Notion pages when extracting text summaries. |
+| Step             | Action                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| **Tool Loading** | Discovers and injects every MCP tool into LangChain at runtime.                                    |
+| **LLM**          | Defaults to `gpt‑4o` via `ChatOpenAI`; swap in any Ollama / OpenAI‑compatible model with one flag. |
+| **Helpers**      | Adds `summarize` (text) and `speak` (MP3) wrappers for large pages.                                |
 
-### 3 · Tkinter GUI
+### 3 · Tkinter GUI
 
-1. **User Input** → sends prompt to the agent  
-2. **Agent reasons** → decides which MCP tools to call  
-3. **Tools Execute** → server hits Notion API, returns data  
-4. **Agent Responds** → streamed answer displayed with styled text  
-5. **Result** → summaries or page changes appear instantly in Notion  
-
----
-
-## Tools & Libraries
-
-| Purpose               | Library / Tech                 |
-| --------------------- | ------------------------------ |
-| Protocol & Server     | **FastMCP**, **MCP-Python**    |
-| Notion SDK            | `notion_client`                |
-| LLM Orchestration     | **LangChain**, **LangGraph**   |
-| Large Language Model  | `gpt-4o` (swap-in Ollama LLMs) |
-| GUI                   | **Tkinter**                    |
-| Async / Transport     | `asyncio` runtime / **SSE**    |
+1. **User types** a question or command.
+2. **Agent plans** which tools to invoke (chain‑of‑thought shown in dev mode).
+3. **FastMCP** hits the Notion API and/or Coqui TTS.
+4. **Agent streams** the answer (plus an MP3 link when TTS is used).
+5. **Result** instantly appears in your Notion workspace and desktop chat window.
 
 ---
 
-## Key Features
+## Available MCP Tools
 
-* 🔧 **Rich Notion Toolset** – append markdown, build tables, create sub-pages, update titles, retrieve users, and more.  
-* 💡 **Structured-Notes Mode** – one-command generation of 10-section study guides or tutorials.  
-* ⚡ **Real-Time Interaction** – SSE keeps server and agent in sync with minimal latency.  
-* 🖥️ **Standalone Desktop App** – run entirely locally via Tkinter; no extra web server required.  
-* 🔒 **Data Privacy** – all operations remain within your connected Notion pages; optional local LLM.  
-* 🛠️ **Extensible** – drop in new MCP tools or swap front-end frameworks without touching core logic.  
+| Category   | Tool                                    | Purpose (Args → Returns)           |
+| ---------- | --------------------------------------- | ---------------------------------- |
+| Content    | `append_content`                        | Markdown‑like → blocks (append)    |
+|            | `create_table`                          | 2‑D list → Notion table block      |
+| Read       | `get_page_text`                         | Deep text extraction (recursive)   |
+| Properties | `retrieve_page_property`                | Paginated property read            |
+| Pages      | `update_page_title`                     | Rename a page                      |
+|            | `create_subpage`                        | Create child page                  |
+|            | `retrieve_page`, `update_page`          | CRUD helpers                       |
+| Users      | `list_users`, `retrieve_user`, `get_me` | Workspace user management          |
+| Search     | `search_notion`                         | Full‑workspace search              |
+| Media      | `text_to_speech`                        | Plain text → MP3 via **Coqui TTS** |
+
+> 🛈 **Tip:** All tools raise `McpError` with a helpful message on failure — perfect for debugging in the GUI console.
+
+---
+
+## Tools & Libraries
+
+| Purpose              | Library / Tech               |
+| -------------------- | ---------------------------- |
+| Protocol & Server    | **FastMCP**, **MCP‑Python**  |
+| Notion SDK           | `notion_client`              |
+| LLM Orchestration    | **LangChain**, **LangGraph** |
+| Large Language Model | `gpt‑4o` (or any Ollama LLM) |
+| Text‑to‑Speech       | **Coqui TTS**                |
+| GUI                  | **Tkinter**                  |
+| Async / Transport    | `asyncio` runtime / **SSE**  |
+
+---
+
+## Key Features
+
+* 🔧 **End‑to‑End Workspace Control** – append blocks, build tables, rename pages, manage users, and search — all from chat.
+* 🗣️ **Text‑to‑Speech** – highlight or request any content and receive a downloadable MP3.
+* 💡 **Structured‑Notes Mode** – generate pedagogical 10‑section guides with intros, code, visuals, and references.
+* ⚡ **Real‑Time Interaction** – SSE keeps server and agent perfectly in sync.
+* 🖥️ **Local‑First Desktop App** – works offline with local LLMs and Coqui TTS; zero cloud cost if you choose.
+* 🛠️ **Extensible** – add new MCP tools or swap frontend frameworks without touching core logic.
